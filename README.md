@@ -36,14 +36,11 @@ License: [Creative Commons Attribute-ShareAlike 3.0](https://creativecommons.org
 
 __str__ in python  
 [Question](https://stackoverflow.com/questions/4912852/how-do-i-change-the-string-representation-of-a-python-class)  
-[Answer by Mark Byers](https://stackoverflow.com/users/61974/mark-byers)  
+[Answer by Mark Byers](https://stackoverflow.com/a/4912856)  
 Authors: [Mark Byers](https://stackoverflow.com/users/61974/mark-byers), [snakile](https://stackoverflow.com/users/110028/snakile), [Elouan Keryell-Even](https://stackoverflow.com/users/3037171/elouan-keryell-even)  
 License: [Creative Commons Attribute-ShareAlike 3.0](https://creativecommons.org/licenses/by-sa/3.0/)  
 
-[Python URL Parse](https://docs.python.org/3/library/urllib.parse.html)  
-License: [Python Software Foundation License](https://docs.python.org/3/license.html#psf-license-agreement-for-python-release)  
-
-[urllib for encoding data as query strings](https://docs.python.org/3/library/urllib.parse.html)  
+[Python URL Parse and Query String Encoding](https://docs.python.org/3/library/urllib.parse.html)  
 License: [Python Software Foundation License](https://docs.python.org/3/license.html#psf-license-agreement-for-python-release)  
 
 [Socket documentation](https://docs.python.org/3/library/socket.html)  
