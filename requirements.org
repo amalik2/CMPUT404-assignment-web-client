@@ -13,7 +13,7 @@
      own source code.
    - Collaboration must be documented in the README.md file
    - Any external source code must be referenced and documented in
-     the README.md file
+     the httpclient.py file
 
 ** User Stories
    - As a user I want to GET from URLs
@@ -25,24 +25,25 @@
      a HTTPResponse object
 
 ** Requirements
-   - [ ] Implement basic HTTP GET
-   - [ ] Implement basic HTTP POST
-   - [ ] The httpclient can pass all the tests in freetests.py
+   - [x] Implement basic HTTP GET
+   - [x] Implement basic HTTP POST
+   - [x] The httpclient can pass all the tests in freetests.py
    - [ ] The webserver can pass all the tests in not-free-tests.py
      (you don't have this one! it can change -- but it will be fair to the user stories/requirements)
-   - [ ] HTTP POST can post vars
-   - [ ] HTTP POST handles at least Content-Type:
+   - [x] HTTP POST can post vars
+   - [x] HTTP POST handles at least Content-Type:
      application/x-www-form-urlencoded
-   - [ ] httpclient can handle 404 requests and 200 requests
+   - [x] httpclient can handle 404 requests and 200 requests
 
 ** Restrictions
-   - [ ] Use Python 2.7
-   - [ ] Must run in the undergrad lab (Ubuntu 12.04)
-   - [ ] License your httpclient properly (use an OSI approved license)
+   - [x] Use Python 3
+   - [x] Must run in the undergrad lab (Ubuntu 16.04)
+   - [x] License your httpclient properly (use an OSI approved license)
      - Put your name on it!
-   - [ ] You cannot use a Web Client library except for urllib utils
+   - [x] You cannot use a Web Client library except for urllib utils
      to convert strings to url-encode and query-string format and back
-   - [ ] You should use the socket library that comes with python
+      - urllib.request is BANNED
+   - [x] You should use the socket library that comes with python
 
 ** Recommendations
    - Use the httpclient.py skeleton.
@@ -59,15 +60,23 @@
      - Line 1: the git URL
      - Line 2: Your CCID
      - Line 3: Your collaborator's CCID
-
-   - To mark your assignment I should be able to type:
-    : git clone http://github.com/youruserid/thisassignment.git yourccid
-    : cd yourccid
-    : python freetests.py
+   - An example submission looks like this
+    #+BEGIN_SRC bash
+        https://github.com/youruserid/thisassignment.git 
+        yourccid
+        yourbuddy1, yourbuddy2
+    #+END_SRC
+   - collaborators must follow the collaboration policy guideline for this assignment.
+   - To mark your assignment I should be able to type:     
+    #+BEGIN_SRC bash
+        git clone http://github.com/youruserid/thisassignment.git yourccid
+        cd yourccid
+        python3 freetests.py
+    #+END_SRC
 
    - Marks will be deducted if I cannot successfully do this.
      
-   - Marks will be deducted for using library code that does the assignment
+   - Marks will be deducted for using library code that does the assignment.
    
    - Marks can be deducated for egregious violation of requirements (e.g. hard
      coding path names etc.).

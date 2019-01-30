@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 # Copyright 2013 Abram Hindle
 # 
@@ -16,16 +16,14 @@
 #
 # run python freetests.py
 
-import urllib2
 import unittest
 import httpclient
-import BaseHTTPServer
-import thread
-import SocketServer
+import http.server
+import threading
+import socketserver
 import random
-import StringIO
 import time
-import urlparse
+import urllib.parse
 import json
 
 BASEHOST = '127.0.0.1'
@@ -37,7 +35,7 @@ httpclass = httpclient
 #httpclass = mysolution
 
 # Sorry but in Python this comes out of the box!
-class MyHTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class MyHTTPHandler(http.server.BaseHTTPRequestHandler):
     post = None 
     get = None
     def do_POST(self):
@@ -47,44 +45,44 @@ class MyHTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 return self.post()
         except Exception as e:
-            print "Exception %s\n" % e
+            print("Exception %s\n" % e)
             raise e
 
     def do_GET(self):
         try:
-            print ("GET %s\n" % self.path)
+            print("GET %s\n" % self.path)
             if (self.get == None):
                 return None
             else:
                 return self.get()
         except Exception as e:
-            print "Exception %s\n" % e
+            print("Exception %s\n" % e)
             raise e
 
 def make_http_server(host = BASEHOST, port = BASEPORT):
-    return BaseHTTPServer.HTTPServer( (host, port) , MyHTTPHandler)
+    return http.server.HTTPServer( (host, port) , MyHTTPHandler)
 
 # always returns 404
 def nothing_available(self):
     self.send_error(404, "File not found")
     self.end_headers()
-    self.wfile.write("")
+    self.wfile.write(bytes("","utf-8"))
 
 # repeats your path back
 def echo_path_get(self):
     self.send_response(200)
     self.send_header("Content-type", "text/plain")
     self.end_headers()
-    self.wfile.write("%s\n" % self.path)
+    self.wfile.write(bytes("%s\n" % self.path,"utf-8"))
 
 # repeats your post back as json
 def echo_post(self):
     length = int(self.headers['Content-Length'])
-    post_data = urlparse.parse_qs(self.rfile.read(length).decode('utf-8'))
+    post_data = urllib.parse.parse_qs(self.rfile.read(length).decode('utf-8'))
     self.send_response(200)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(post_data))
+    self.wfile.write(bytes(json.dumps(post_data),"utf-8"))
 
 def header_check(self):
     response = 200
@@ -95,7 +93,7 @@ def header_check(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(bytes(json.dumps(errors),"utf-8"))
 
 def die_on_method(self):
     response = 405
@@ -106,7 +104,7 @@ def die_on_method(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(bytes(json.dumps(errors),"utf-8"))
 
 def post_header_check(self):
     response = 200
@@ -120,7 +118,7 @@ def post_header_check(self):
     self.send_response(response)
     self.send_header("Content-type", "application/json")
     self.end_headers()
-    self.wfile.write(json.dumps(errors))
+    self.wfile.write(bytes(json.dumps(errors),"utf-8"))
 
 
 
@@ -134,27 +132,26 @@ class TestHTTPClient(unittest.TestCase):
         '''Cache the httpd server and run it as a thread'''
         if (TestHTTPClient.httpd == None):
             try:
-                self.thread = thread.start_new_thread(self.run_server,())#, tuple([self]))
+                self.thread = threading.Thread(target=self.run_server).start()
                 time.sleep(1)
             except Exception as e:
-                print e
-                print "setUP: Thread died"
-                raise e
+                print(e)
+                print("setUP: Thread died")
+                raise(e)
 
     @classmethod
     def run_server(self):
         '''run the httpd server in a thread'''
         try:    
-            SocketServer.TCPServer.allow_reuse_address = True
-            BaseHTTPServer.allow_reuse_address = True
-            BaseHTTPServer.HTTPServer.allow_reuse_address = True
+            socketserver.TCPServer.allow_reuse_address = True
+            http.server.HTTPServer.allow_reuse_address = True
             TestHTTPClient.httpd = make_http_server()
-            print "HTTP UP!\n"
+            print("HTTP UP!\n")
             TestHTTPClient.httpd.serve_forever()
-            print "HTTP has been shutdown!\n"
+            print("HTTP has been shutdown!\n")
         except Exception as e:
-            print e
-            print "run_server: Thread died"
+            print(e)
+            print("run_server: Thread died")
 
 
 
@@ -205,7 +202,7 @@ class TestHTTPClient(unittest.TestCase):
         url = "http://%s:%d/%s" % (BASEHOST,BASEPORT, path)
         req = http.POST( url )
         self.assertTrue(req != None, "None Returned!")
-        self.assertTrue(req.code == 200)
+        self.assertTrue(req.code == 200,"Code is %s but I wanted a 200 OK" % req.code)
 
         
         
@@ -225,7 +222,7 @@ class TestHTTPClient(unittest.TestCase):
             try:
                 req = http.GET( url )
             except Exception as e:
-                print "An Exception was thrown for %s" % url
+                print("An Exception was thrown for %s" % url)
                 self.assertTrue( False, "An Exception was thrown for %s %s" % (url,e))
             self.assertTrue(req != None, "None Returned! %s" % url)
             self.assertTrue(req.code == 200 or 
@@ -247,13 +244,13 @@ class TestHTTPClient(unittest.TestCase):
                 'b':'bbbbbbbbbbbbbbbbbbbbbb',
                 'c':'c',
                 'd':'012345\r67890\n2321321\n\r'}
-        print "Sending POST!"
+        print("Sending POST!")
         req = http.POST( url, args=args )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200)
-        print "Body: [%s]" % req.body
+        print("Test Post Body: [%s]" % req.body)
         outargs = json.loads(req.body)
-        print outargs.__class__
+        print(outargs.__class__)
         for key in args:
             self.assertTrue(args[key] == outargs[key][0], "Key [%s] not found" % key)
         for key in outargs:
@@ -262,7 +259,7 @@ class TestHTTPClient(unittest.TestCase):
     @classmethod
     def tearDownClass(self):        
         if (TestHTTPClient.httpd!=None):
-            print "HTTP Shutdown in tearDown\n"
+            print("HTTP Shutdown in tearDown\n")
             TestHTTPClient.httpd.shutdown()
             TestHTTPClient.httpd.server_close()
             time.sleep(1)

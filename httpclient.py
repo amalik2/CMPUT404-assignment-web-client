@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 # Copyright 2016 Abram Hindle, https://github.com/tywtyw2002, and https://github.com/treedust
 # 
@@ -21,14 +21,12 @@
 import sys
 import socket
 import re
-# you may use urllib to encode data appropriately
-import urllib
 import ssl
 
-from urlparse import urlparse
+from urllib.parse import urlparse, urlencode
 
 def help():
-    print "httpclient.py [GET/POST] [URL]\n"
+    print("httpclient.py [GET/POST] [URL]\n")
 
 class HTTPResponse(object):
     def __init__(self, code=200, body="", headers="", statusMessage=""):
@@ -39,7 +37,8 @@ class HTTPResponse(object):
 
     # Credit to Mark Byers at https://stackoverflow.com/a/4912856 for how to use __str__
     def __str__(self):
-        return "HTTP/1.1 %d %s\r\n%s\r\n%s" % (self.code, self.statusMessage, self.headers, self.body)
+        #return "HTTP/1.1 %d %s\r\n%s\r\n%s" % (self.code, self.statusMessage, self.headers, self.body)
+        return self.body
 
     def is_redirect(self):
         return self.code == 301 or self.code == 302
@@ -66,6 +65,7 @@ class HTTPClient(object):
             wrappedSocket.connect((host, port))
             return wrappedSocket
         sock.connect((host, port))
+        self.socket = sock
         return sock
 
     def get_code(self, data):
@@ -92,6 +92,12 @@ class HTTPClient(object):
 
     def get_status_message(self, data):
         return " ".join(data[0].split(" ")[2:])
+    
+    def sendall(self, data):
+        self.socket.sendall(data.encode('utf-8'))
+        
+    def close(self):
+        self.socket.close()
 
     # read everything from the socket
     def recvall(self, sock):
@@ -107,7 +113,7 @@ class HTTPClient(object):
                     return tempBuf
             else:
                 done = not part
-        return str(buffer)
+        return buffer.decode('utf-8')
 
     def _get_socket_address(self, url):
         details = urlparse(url)
@@ -150,9 +156,8 @@ class HTTPClient(object):
             path = "/"
 
         if (method == "GET"):
-            sock.sendall("GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n\r\n" % (path, host))
-        #print("%s %s HTTP/1.1\r\nHost: %s\r\nAccept: */*\r\n%s" % (method, path, host, requestConcat))
-        sock.sendall("%s %s HTTP/1.1\r\nHost: %s\r\nAccept: */*\r\n%s" % (method, path, host, requestConcat))
+            self.sendall("GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n\r\n" % (path, host))
+        self.sendall("%s %s HTTP/1.1\r\nHost: %s\r\nAccept: */*\r\n%s" % (method, path, host, requestConcat))
 
         response = self.recvall(sock)
         sock.close()
@@ -166,18 +171,17 @@ class HTTPClient(object):
     def _parse_args(self, args):
         if (args == None):
             return ""
-        return urllib.urlencode(args)
+        return urlencode(args)
 
     def _get_byte_length(self, string):
         # Credit to Kris at https://stackoverflow.com/a/30686735 for string byte length
         return len(string.encode("utf-8"))
 
     def GET(self, url, args=None):
+        # TODO: does GET need to handle args?
         return self._send_request(url, "GET", "\r\n")
 
     def POST(self, url, args=None):
-        # TODO: is this needed?
-        #concat = "Accept: application/x-www-form-urlencoded, application/json, text/plain, "
         data = self._parse_args(args)
         concat = "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n%s" % (self._get_byte_length(data), data)
         response = self._send_request(url, "POST", concat)
@@ -196,6 +200,6 @@ if __name__ == "__main__":
         help()
         sys.exit(1)
     elif (len(sys.argv) == 3):
-        print client.command( sys.argv[2], sys.argv[1] )
+        print(client.command( sys.argv[2], sys.argv[1] ))
     else:
-        print client.command( sys.argv[1] )   
+        print(client.command( sys.argv[1] ))
