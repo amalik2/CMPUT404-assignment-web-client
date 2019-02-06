@@ -37,7 +37,6 @@ class HTTPResponse(object):
 
     # Credit to Mark Byers at https://stackoverflow.com/a/4912856 for how to use __str__
     def __str__(self):
-        #return "HTTP/1.1 %d %s\r\n%s\r\n%s" % (self.code, self.statusMessage, self.headers, self.body)
         return self.body
 
     def is_redirect(self):
@@ -53,17 +52,9 @@ class HTTPResponse(object):
         return ""
 
 class HTTPClient(object):
-    #def get_host_port(self,url):
-
     def connect(self, host, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        if port == 443:
-            # code from: https://docs.python.org/3/library/ssl.html
-            context = ssl.create_default_context()
-            wrappedSocket = context.wrap_socket(sock, server_hostname=host)
-            wrappedSocket.connect((host, port))
-            return wrappedSocket
         sock.connect((host, port))
         self.socket = sock
         return sock
@@ -105,7 +96,6 @@ class HTTPClient(object):
         done = False
         while not done:
             part = sock.recv(1024)
-
             if (part):
                 buffer.extend(part)
                 tempBuf = str(buffer)
@@ -135,7 +125,6 @@ class HTTPClient(object):
         statusMessage = ""
 
         lines = response.split("\n")
-        # TODO: remove this if not needed
         if (len(lines) == 1 and lines[0] == ""):
             print("EMPTY RESPONSE")
             body = ""
@@ -162,10 +151,6 @@ class HTTPClient(object):
         response = self.recvall(sock)
         sock.close()
         responseData = self._parse_response(response)
-        # TODO: remove the below if it is not needed
-        """ if (responseData.is_redirect()):
-            redirectURL = responseData.get_header("Location")
-            return self._send_request(redirectURL, method, requestConcat) """
         return responseData
 
     def _parse_args(self, args):
@@ -188,6 +173,8 @@ class HTTPClient(object):
         return response
 
     def command(self, url, command="GET", args=None):
+        if ((not url.startswith("http")) and url.startswith("www.")):
+            url = "http://" + url
         if (command == "POST"):
             return self.POST( url, args )
         else:
